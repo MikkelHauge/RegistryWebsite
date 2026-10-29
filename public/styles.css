@@ -7,6 +7,7 @@
   --bg-2: #6a2c70;
   --accent: #f9a826;
   --text: #f5f3ff;
+  --error: #ff9a9a;
 }
 
 body {
@@ -15,19 +16,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1.25rem;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--text);
   background: linear-gradient(135deg, var(--bg-1), var(--bg-2));
-  transition: background 0.6s ease;
+  background-attachment: fixed;
 }
 
 .card {
   width: 100%;
-  max-width: 34rem;
+  max-width: 38rem;
   padding: 2.5rem;
   border-radius: 1.25rem;
-  text-align: center;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.35);
@@ -36,8 +36,16 @@ body {
 
 h1 {
   margin: 0 0 0.5rem;
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
   letter-spacing: -0.02em;
+}
+
+h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
 }
 
 .subtitle {
@@ -46,22 +54,51 @@ h1 {
   line-height: 1.5;
 }
 
-.message {
-  margin: 0 0 1.5rem;
-  padding: 0.85rem 1rem;
-  border-radius: 0.75rem;
-  background: rgba(0, 0, 0, 0.25);
-  min-height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.4;
-  transition: background 0.3s ease, transform 0.3s ease;
+/* ------------------------------------------------------------------ forms */
+
+label {
+  display: block;
+  margin: 1rem 0 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
 }
 
-.message.pop {
-  transform: scale(1.03);
+input,
+textarea {
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.9rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
   background: rgba(0, 0, 0, 0.4);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(245, 243, 255, 0.4);
+}
+
+#code {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#code::placeholder {
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .action {
@@ -72,25 +109,133 @@ h1 {
   color: #201627;
   background: var(--accent);
   border: none;
-  padding: 0.9rem 2rem;
+  padding: 0.85rem 2rem;
   border-radius: 999px;
   box-shadow: 0 0.5rem 1.25rem rgba(249, 168, 38, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
 }
 
-.action:hover {
+.action:hover:not(:disabled) {
   filter: brightness(1.08);
   transform: translateY(-2px);
 }
 
-.action:active {
-  transform: translateY(0) scale(0.97);
+.action:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
-.counter {
-  margin: 1.5rem 0 0;
+.action:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+#gate-form .action,
+.comment-form .action {
+  margin-top: 1.25rem;
+}
+
+.linkish {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--text);
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.linkish:hover {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------- app */
+
+.app-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.event-body {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.25);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.comment {
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.comment-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.35rem;
+}
+
+.comment-author {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.comment-head time {
+  opacity: 0.55;
+}
+
+.comment-body {
+  margin: 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.comment-form {
+  margin-top: 1rem;
+}
+
+/* ------------------------------------------------------------------ misc */
+
+.error {
+  min-height: 1.2rem;
+  margin: 0.85rem 0 0;
+  font-size: 0.875rem;
+  color: var(--error);
+}
+
+.muted {
+  opacity: 0.6;
   font-size: 0.9rem;
-  opacity: 0.7;
+}
+
+.small {
+  font-size: 0.8rem;
+  margin-top: 1.5rem;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

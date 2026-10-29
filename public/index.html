@@ -3,21 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registry Website</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Event access</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="card">
-    <h1>Hello, world!</h1>
-    <p class="subtitle">A very basic website with some colors, some text, and one button.</p>
+    <section id="gate">
+      <h1>Event access</h1>
+      <p class="subtitle">Enter the code printed on your invitation.</p>
 
-    <p id="message" class="message">Nothing has happened yet. Try the button.</p>
+      <form id="gate-form" novalidate>
+        <label for="code">Access code</label>
+        <input id="code" name="code" type="text" autocomplete="off" spellcheck="false"
+               autocapitalize="characters" maxlength="9" placeholder="e.g. K7QM-2X9T" required />
 
-    <button id="action" class="action" type="button">Do the thing</button>
+        <button type="submit" class="action">Unlock</button>
+        <p id="gate-error" class="error" role="alert"></p>
+      </form>
+    </section>
 
-    <p class="counter">Button pressed <span id="count">0</span> time(s).</p>
+    <section id="app" hidden>
+      <header class="app-head">
+        <h1 id="event-title">…</h1>
+        <button id="sign-out" class="linkish" type="button">Leave</button>
+      </header>
+      <div id="event-body" class="event-body"></div>
+
+      <h2>Comments</h2>
+      <ul id="comments" class="comments"></ul>
+      <p id="comments-empty" class="muted">No comments yet.</p>
+
+      <form id="comment-form" class="comment-form">
+        <textarea id="comment-body" maxlength="2000" rows="3" placeholder="Say something nice…" required></textarea>
+        <button type="submit" class="action">Post</button>
+        <p id="comment-error" class="error" role="alert"></p>
+      </form>
+
+      <p class="muted small">Signed in as <span id="who"></span></p>
+    </section>
+
+    <p id="boot-error" class="error" role="alert"></p>
   </main>
 
-  <script src="script.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
