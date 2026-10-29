@@ -1,48 +1,66 @@
 # Registry Website
 
-A small private event page for friends.
+A private, Danish-language page for one specific event.
 
 - **Site**: static files in `public/`, published to GitHub Pages.
-- **Access**: invite codes, verified in Postgres. The codes are never in this repo.
-- **Comments**: stored in Supabase, readable only by people who redeemed a code.
+- **Access**: invite codes checked in Postgres. Codes are never in this repo.
+- **Data**: RSVP and "what I bring" live in Supabase, gated by RLS.
 
-The repo is safe to be public: the only credential that ships to the browser is
-the Supabase **anon** key, which is designed to be public and is constrained by
-Row Level Security.
+The repo is public on purpose. Nothing secret is in it: the only credential
+shipped to the browser is the Supabase **publishable** key, which is designed to
+be public and is constrained by Row Level Security.
 
-## How it works
+## Pages
 
-1. The browser signs in anonymously with Supabase, getting a session but no data.
-2. The user types an invite code. `redeem_invite()` hashes it and compares against
-   `invites.code_hash` (SHA-256). Each invite carries the guest's name, so a
-   match creates a `members` row that is already identified — no name to type.
-3. Every table is protected by RLS policies that require a `members` row for
-   `auth.uid()`. Without one you can read nothing — not the event, not comments.
+| File | What it is |
+| --- | --- |
+| `public/index.html` | Login — enter the code from the invitation |
+| `public/hjem.html` | Landing page: banner, headline, intro, 3 buttons |
+| `public/kommer.html` | "Vi kommer": RSVP + what guests bring |
+| `public/info.html` | Address, contact, practical info, address image |
+| `public/pjat.html` | Silly stuff (placeholder) |
+
+All copy is Danish. Column names in the database are English.
+
+## How access works
+
+1. The browser signs in anonymously, getting a session but no data.
+2. `redeem_invite(code)` hashes the code and compares it to `invites.code_hash`.
+   On a match it creates a `members` row carrying the guest's name, so nobody
+   types a name and nobody picks their own identity.
+3. Every table is behind RLS that requires a `members` row for `auth.uid()`.
+
+## Data model
+
+| Table | Purpose |
+| --- | --- |
+| `invites` | Code hashes + the guest name each code belongs to |
+| `members` | One row per browser that redeemed a code |
+| `rsvp` | Attendance (`attending`), `adults`, `children`, ticked `categories` |
+| `bring_items` | Shared list of what people bring, owned row by row |
+| `event_info` | Single row: all page text, address, contact, image path |
+| `redeem_attempts` | Failed guesses, for the lockout |
+
+`bring_items` is **shared**: every member reads every row, but the delete policy
+only matches `user_id = auth.uid()`, so guests can only remove their own.
 
 ## Setup (one time)
 
-### 1. Database
+1. **Database** — Supabase → SQL Editor → paste `supabase/schema.sql` → Run.
+2. **Anonymous sign-ins** — Authentication → Sign In / Providers → enable
+   **Allow anonymous sign-ins**.
+3. **Keys** — project URL + publishable key into `public/config.js`.
+4. **Publishing** — Settings → Pages → Source: **GitHub Actions**.
 
-Supabase → **SQL Editor** → paste `supabase/schema.sql` → **Run**.
-
-### 2. Anonymous sign-ins
-
-Supabase → **Authentication** → **Sign In / Providers** → enable
-**Allow anonymous sign-ins**.
-
-### 3. Invite codes
-
-One call per person, with their name:
+## Invite codes
 
 ```sql
 select public.create_invite('Mikkel');
 ```
 
-It prints a code like `K7QM-2X9T` **once**. Only the hash is stored, so write it
-down — it cannot be recovered. The name passed here is what guests will post
-under; they never type a name themselves.
-
-To print a whole sheet for mailing, generate a batch in one go:
+Prints a code like `K7QM-2X9T` once; only the hash is stored. Codes are 8
+characters from a 32-character alphabet (`2-9`, `A-Z` without `I` and `O`),
+case-insensitive, dashes optional. A batch:
 
 ```sql
 select t.name, c.code
@@ -50,30 +68,35 @@ from (values ('Mikkel'), ('Anna'), ('Bo')) as t(name)
 cross join lateral (select public.create_invite(t.name) as code) c;
 ```
 
-Codes are 8 characters from a 32-character alphabet (`2-9`, `A-Z` without `I`
-and `O`) — no ambiguous characters, case-insensitive, dashes optional.
+Revoke a code: `update public.invites set revoked = true where label = 'Mikkel';`
 
-Revoke someone with:
+## Adding the private details later
 
-```sql
-update public.invites set revoked = true where label = 'Mikkel';
-```
-
-Revoking stops *new* logins. Someone already inside keeps their `members` row
-until you delete it:
+Everything is a single row, so one query updates the whole site:
 
 ```sql
-delete from public.members where display_name = 'Mikkel';
+update public.event_info
+set address = 'Vejnavn 12, 1234 By',
+    contact = 'Ring på 12 34 56 78',
+    info_body = 'Festen starter kl. 18. Vi spiser kl. 19.30.'
+where id = 1;
 ```
 
-### 4. Keys
+The headline and intro on the landing page are `title` and `body`.
 
-Copy **Project URL** and the **anon public** key from Supabase → Settings → API
-into `public/config.js`. Never put the `service_role` key there.
+### The address image
 
-### 5. Publishing
+Do **not** commit an image showing the address to this repo — the repo is public
+and the file would be readable by anyone. Put it in a **private** Supabase
+Storage bucket named `privat`, then point at it:
 
-Settings → Pages → Source: **GitHub Actions**. Pushes to `main` publish `public/`.
+```sql
+update public.event_info set image_path = 'adresse.png' where id = 1;
+```
+
+The page requests a short-lived signed URL for members. Until a path is set, a
+neutral placeholder is shown. (The bucket and its member-only read policy still
+need to be created in the dashboard.)
 
 ## Local preview
 
@@ -81,19 +104,11 @@ Settings → Pages → Source: **GitHub Actions**. Pushes to `main` publish `pub
 python -m http.server 8000 --directory public
 ```
 
-Then open <http://localhost:8000>.
+## Known limits
 
-## Editing the event details
-
-Supabase → **Table editor** → `event_info` → edit the single row.
-
-## Limits worth knowing
-
-- An invite code can be shared by the person you gave it to, and it signs in as
-  whoever it was issued to. Codes are soft gating, not proof of identity.
-- Codes are 8 characters ≈ 40 bits, which is only safe because failed attempts
-  are counted server-side: 8 wrong guesses in 10 minutes locks that session for
-  15 minutes. Anonymous sign-ins are also rate-limited per IP by Supabase, so
-  cycling sessions does not give an attacker unlimited guesses.
-- There is no admin UI; adding people and editing the event is done in the
-  Supabase dashboard.
+- A code can be shared, and it signs in as whoever it was issued to.
+- Codes are ~40 bits, safe because failed attempts are counted server-side:
+  8 wrong guesses in 10 minutes locks that session for 15 minutes.
+- There is no admin UI; invites and text are edited in the Supabase dashboard.
+- `comments` / `comments_with_author` are leftovers from an earlier iteration and
+  are no longer used by any page.

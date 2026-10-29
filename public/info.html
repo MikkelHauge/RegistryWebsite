@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Info</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-head">
+      <img src="banner.svg" class="banner" alt="" />
+    </header>
+
+    <nav class="crumbs"><a href="hjem.html">← Forside</a></nav>
+
+    <h1 id="info-title">Praktisk information</h1>
+    <p id="info-body" class="intro"></p>
+
+    <section class="card">
+      <h2>Adresse</h2>
+      <p id="address" class="body-text"></p>
+      <img id="address-image" class="address-image" src="adresse.svg" alt="Kort eller billede med adressen" />
+    </section>
+
+    <section class="card">
+      <h2>Kontakt</h2>
+      <p id="contact" class="body-text"></p>
+    </section>
+
+    <p class="muted small">
+      Logget ind som <span id="who"></span> ·
+      <button id="sign-out" class="linkish" type="button">Log ud</button>
+    </p>
+  </div>
+
+  <script type="module" src="info.js"></script>
+</body>
+</html>

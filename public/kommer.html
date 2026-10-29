@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Vi kommer</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-head">
+      <img src="banner.svg" class="banner" alt="" />
+    </header>
+
+    <nav class="crumbs"><a href="hjem.html">← Forside</a></nav>
+
+    <h1>Vi kommer</h1>
+    <p id="subheadline" class="subtitle">Tilmelding og hvad I tager med</p>
+
+    <section class="card">
+      <h2>Kan I deltage?</h2>
+
+      <div class="choice-list">
+        <label class="choice">
+          <input type="radio" name="attending" value="no" />
+          <span>Nej, desværre ikke</span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="attending" value="yes" />
+          <span>Ja</span>
+        </label>
+      </div>
+
+      <div id="party-size" hidden>
+        <h3>Hvor mange kommer I?</h3>
+        <label class="number-row">
+          <span>Voksne</span>
+          <input id="adults" type="number" min="0" max="50" inputmode="numeric" />
+        </label>
+        <label class="number-row">
+          <span>Børn</span>
+          <input id="children" type="number" min="0" max="50" inputmode="numeric" />
+        </label>
+      </div>
+
+      <p id="save-status" class="muted small" role="status"></p>
+    </section>
+
+    <section class="card">
+      <h2>Hvad tager I med?</h2>
+      <p class="body-text">Vi ønsker os ikke gaver. I stedet håber vi, at I vil være med til at gøre festen god ved at tage noget med — mad, drikkevarer eller bare godt humør.</p>
+      <p class="muted small">Vælg mindst én ting. Alle kan se, hvad der er på listen, men du kan kun slette det, du selv har skrevet.</p>
+
+      <div id="bring-groups" class="bring-groups"></div>
+      <p id="bring-error" class="error" role="alert"></p>
+    </section>
+
+    <p class="muted small">
+      Logget ind som <span id="who"></span> ·
+      <button id="sign-out" class="linkish" type="button">Log ud</button>
+    </p>
+  </div>
+
+  <script type="module" src="kommer.js"></script>
+</body>
+</html>

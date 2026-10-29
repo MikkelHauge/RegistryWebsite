@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="480" viewBox="0 0 800 480" role="img" aria-label="Plads til billede med adresse">
+  <rect width="800" height="480" rx="16" fill="#1f1a2e" />
+  <rect x="16" y="16" width="768" height="448" rx="12" fill="none" stroke="#f9a826" stroke-opacity="0.5" stroke-width="3" stroke-dasharray="14 12" />
+
+  <g fill="none" stroke="#f5f3ff" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M360 150 L400 120 L440 150 L440 240 L360 240 Z" />
+    <path d="M385 240 L385 195 L415 195 L415 240" />
+  </g>
+
+  <text x="400" y="300" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="30" font-weight="600" fill="#f5f3ff" opacity="0.85">Billede med adresse</text>
+  <text x="400" y="340" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="19" fill="#f5f3ff" opacity="0.5">Lægges i en privat Supabase-bucket</text>
+</svg>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Forside</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-head">
+      <img src="banner.svg" class="banner" alt="" />
+    </header>
+
+    <h1 id="headline">Velkommen</h1>
+    <p id="intro" class="intro"></p>
+
+    <nav class="menu">
+      <a class="menu-button" href="kommer.html">
+        <span class="menu-title">Vi kommer</span>
+        <span class="menu-sub">Tilmelding og hvad I tager med</span>
+      </a>
+      <a class="menu-button" href="info.html">
+        <span class="menu-title">Info</span>
+        <span class="menu-sub">Adresse, tid og praktiske detaljer</span>
+      </a>
+      <a class="menu-button" href="pjat.html">
+        <span class="menu-title">Pjat</span>
+        <span class="menu-sub">Sjov og ballade</span>
+      </a>
+    </nav>
+
+    <p class="muted small">
+      Logget ind som <span id="who"></span> ·
+      <button id="sign-out" class="linkish" type="button">Log ud</button>
+    </p>
+  </div>
+
+  <script type="module">
+    import { requireMember, getEvent, signOut, friendly } from "./auth.js";
+
+    const member = await requireMember();
+    document.getElementById("who").textContent = member.display_name;
+    document.getElementById("sign-out").addEventListener("click", signOut);
+
+    try {
+      const ev = await getEvent();
+      if (ev?.title) document.getElementById("headline").textContent = ev.title;
+      if (ev?.body) document.getElementById("intro").textContent = ev.body;
+    } catch (error) {
+      document.getElementById("intro").textContent = friendly(error);
+    }
+  </script>
+</body>
+</html>

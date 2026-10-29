@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Pjat</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="site-head">
+      <img src="banner.svg" class="banner" alt="" />
+    </header>
+
+    <nav class="crumbs"><a href="hjem.html">← Forside</a></nav>
+
+    <h1>Pjat</h1>
+    <p class="subtitle">Her kommer sjov og ballade.</p>
+
+    <section class="card">
+      <p class="body-text">
+        Denne side er stadig tom. Planen er, at der skal være noget fjollet her —
+        måske et lille spil som Minesweeper, måske nogle sjove billeder.
+      </p>
+      <p class="muted small">Kom tilbage senere.</p>
+    </section>
+
+    <p class="muted small">
+      Logget ind som <span id="who"></span> ·
+      <button id="sign-out" class="linkish" type="button">Log ud</button>
+    </p>
+  </div>
+
+  <script type="module">
+    import { requireMember, signOut } from "./auth.js";
+
+    const member = await requireMember();
+    document.getElementById("who").textContent = member.display_name;
+    document.getElementById("sign-out").addEventListener("click", signOut);
+  </script>
+</body>
+</html>
