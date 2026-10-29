@@ -9,7 +9,11 @@
 --   * Failed redeem attempts are counted in the database, because the browser
 --     can be tampered with and short codes need a real lockout.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
+
+-- Supabase installs pgcrypto into the `extensions` schema. The SECURITY DEFINER
+-- functions below pin their search_path, so it must include `extensions` or
+-- gen_random_bytes()/digest() are not visible inside them.
 
 -- ---------------------------------------------------------------- invites
 create table if not exists public.invites (
@@ -88,13 +92,51 @@ create policy "comments insertable by members" on public.comments
     and exists (select 1 from public.members m where m.user_id = auth.uid())
   );
 
--- Authors are resolved from members, so a client cannot spoof a display name.
+-- Author names are denormalised onto each comment by a trigger. A join back to
+-- members would NOT work: RLS only lets a member read their own members row, so
+-- the join would silently drop every other person's comments.
+alter table public.comments add column if not exists display_name text;
+
+update public.comments c
+set display_name = m.display_name
+from public.members m
+where c.user_id = m.user_id
+  and c.display_name is null;
+
+update public.comments set display_name = 'Guest' where display_name is null;
+
+alter table public.comments alter column display_name set not null;
+
+create or replace function public.set_comment_author()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_name text;
+begin
+  select display_name into v_name
+  from public.members
+  where user_id = auth.uid();
+
+  if v_name is null then
+    raise exception 'not a member' using errcode = '28000';
+  end if;
+
+  new.user_id := auth.uid();
+  new.display_name := v_name;
+  return new;
+end;
+$$;
+
+drop trigger if exists comments_set_author on public.comments;
+create trigger comments_set_author
+  before insert on public.comments
+  for each row execute function public.set_comment_author();
+
+-- Superseded by the trigger above.
 drop view if exists public.comments_with_author;
-create view public.comments_with_author
-  with (security_invoker = on) as
-select c.id, c.body, c.created_at, m.display_name
-from public.comments c
-join public.members m on m.user_id = c.user_id;
 
 -- ------------------------------------------------------- redeem_invite()
 -- The name comes from the invite itself (the label you created it with), so a
@@ -107,7 +149,7 @@ create or replace function public.redeem_invite(p_code text)
 returns jsonb
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_norm    text;
@@ -194,7 +236,7 @@ create or replace function public.create_invite(p_label text)
 returns text
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_alphabet constant text := '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -231,7 +273,6 @@ revoke all on function public.create_invite(text) from anon;
 grant select on public.members                to authenticated;
 grant select on public.event_info             to authenticated;
 grant select, insert on public.comments       to authenticated;
-grant select on public.comments_with_author   to authenticated;
 
 -- --------------------------------------------------------- starter event
 insert into public.event_info (id, title, body)

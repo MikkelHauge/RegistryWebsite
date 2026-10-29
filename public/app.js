@@ -173,7 +173,7 @@ function formatWhen(iso) {
 
 async function loadComments() {
   const { data, error } = await supabase
-    .from("comments_with_author")
+    .from("comments")
     .select("id, body, created_at, display_name")
     .order("created_at", { ascending: true })
     .limit(200);
@@ -253,14 +253,11 @@ ui.commentForm.addEventListener("submit", async (event) => {
   button.disabled = true;
 
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("Your session expired. Reload the page.");
-
+    // user_id and display_name are filled in by the database trigger, so the
+    // browser cannot post as somebody else.
     const { error } = await supabase
       .from("comments")
-      .insert({ user_id: user.id, body: body.slice(0, 2000) });
+      .insert({ body: body.slice(0, 2000) });
 
     if (error) throw error;
 
